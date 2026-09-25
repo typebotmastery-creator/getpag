@@ -1,0 +1,33 @@
+# Credenciais e dados de producao nunca entram no versionamento.
+config/config.php
+config/.env
+.env
+.env.*
+*.pem
+*.pfx
+*.p12
+*.key
+*.crt
+
+# Dump do banco (contem schema + usuarios + hashes + tokens)
+Banco_de_Dados.sql
+*.sql
+*.sql.bak
+*.sql.tmp
+
+# Logs (podem conter tokens, emails e payloads de pagamento)
+*.log
+*.txt
+logs_backup/*
+!logs_backup/.htaccess
+
+# Uploads
+uploads/*
+!uploads/.htaccess
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.orig
+*.rej

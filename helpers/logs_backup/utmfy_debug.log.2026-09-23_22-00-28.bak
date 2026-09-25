@@ -1,0 +1,12 @@
+2026-09-23 21:41:38 - === Disparo UTMfy Iniciado ===
+2026-09-23 21:41:38 - Evento: 'pending' -> Status UTMfy: 'waiting_payment' | ID Transação: 1328264662
+2026-09-23 21:41:38 - AVISO: Nenhuma integração ativa encontrada para User: 33 na coluna 'event_pending'.
+2026-09-23 21:41:39 - === Disparo UTMfy Iniciado ===
+2026-09-23 21:41:39 - Evento: 'pending' -> Status UTMfy: 'waiting_payment' | ID Transação: 1328264662
+2026-09-23 21:41:39 - AVISO: Nenhuma integração ativa encontrada para User: 33 na coluna 'event_pending'.
+2026-09-23 21:44:45 - === Disparo UTMfy Iniciado ===
+2026-09-23 21:44:45 - Evento: 'approved' -> Status UTMfy: 'paid' | ID Transação: 1352535929
+2026-09-23 21:44:45 - AVISO: Nenhuma integração ativa encontrada para User: 33 na coluna 'event_approved'.
+2026-09-23 21:44:46 - === Disparo UTMfy Iniciado ===
+2026-09-23 21:44:46 - Evento: 'approved' -> Status UTMfy: 'paid' | ID Transação: 1352535929
+2026-09-23 21:44:46 - AVISO: Nenhuma integração ativa encontrada para User: 33 na coluna 'event_approved'.

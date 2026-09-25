@@ -1,0 +1,5 @@
+FROM mariadb:10.11
+
+COPY Banco_de_Dados.sql /docker-entrypoint-initdb.d/init.sql
+
+RUN chmod 644 /docker-entrypoint-initdb.d/init.sql
