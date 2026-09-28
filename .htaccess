@@ -65,8 +65,10 @@ RewriteRule .* - [F,L]
 RewriteCond %{THE_REQUEST} \s/views/ [NC]
 RewriteRule ^views/.*\.php$ - [F,L]
 
-# Bloqueia execução de PHP em uploads (CRÍTICO!)
-RewriteCond %{REQUEST_URI} ^/uploads/.*\.php$ [NC]
+# Bloqueia execução de scripts em uploads (CRÍTICO!)
+# Só .php não bastava: .phtml, .phar e companhia também executam no Apache.
+# O uploads/.htaccess tem a mesma lista como segunda barreira.
+RewriteCond %{REQUEST_URI} ^/uploads/.*\.(php|php[3-8]|pht|phtml|phar|phps|cgi|pl|py|sh|bash|asp|aspx|jsp)$ [NC]
 RewriteRule .* - [F,L]
 
 # ============================================================

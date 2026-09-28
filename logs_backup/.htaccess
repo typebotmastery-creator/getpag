@@ -1,0 +1,10 @@
+# Logs nunca devem ser servidos pela web. O .htaccess da raiz ja bloqueia
+# /logs_backup, mas esta segunda barreira cobre o caso de o mod_rewrite
+# estar desligado ou a regra ser removida em uma customization.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

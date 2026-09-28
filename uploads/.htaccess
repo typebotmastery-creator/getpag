@@ -1,0 +1,32 @@
+# Uploads sao DADOS, nunca codigo.
+#
+# O app serve as imagens por URL direta (<img src="uploads/...">), entao o
+# acesso normal precisa continuar funcionando. O que nao pode e a EXECUCAO:
+# um .phtml ou .phar enviado por um usuario rodaria no servidor.
+#
+# O .htaccess da raiz bloqueia so .php. Aqui a barreira e mais larga e tem
+# duas camadas, porque uma depende da outra estar configurada.
+
+# 1. mod_rewrite: barra as extensoes executaveis antes de qualquer handler
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule "\.(?i:php|php[3-8]|pht|phtml|phar|phps|cgi|pl|py|sh|bash|asp|aspx|jsp)$" - [F,L]
+</IfModule>
+
+# 2. FilesMatch: segunda barreira, nao depende do mod_rewrite estar ligado
+<FilesMatch "(?i)\.(php|php[3-8]|pht|phtml|phar|phps|cgi|pl|py|sh|bash|asp|aspx|jsp)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Impede que alguem sobrescreva este arquivo de protecao
+<Files ".htaccess">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</Files>
