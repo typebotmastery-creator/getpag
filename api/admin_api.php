@@ -42,6 +42,9 @@ if (file_exists($phpmailer_path . 'PHPMailer.php')) {
 
 if (file_exists($phpmailer_path . 'SMTP.php')) {
     require_once $phpmailer_path . 'SMTP.php';
+
+// Reply-To e List-Unsubscribe: helps contra spam (ver helpers/mail_helper.php)
+require_once __DIR__ . '/../helpers/mail_helper.php';
     error_log("ADMIN_API: SMTP.php carregado com sucesso.");
 } else {
     error_log("ADMIN_API: ERRO: SMTP.php não encontrado em " . $phpmailer_path . 'SMTP.php');
@@ -774,12 +777,14 @@ try {
             $mail->Username = $smtp_config['username'];
             $mail->Password = $smtp_config['password'];
             
-            // SMTPOptions para aceitar certificados autoassinados (cuidado em produção)
+            // Valida o certificado TLS do servidor SMTP. Antes estava false /
+            // allow_self_signed true, o que aceitava qualquer certificado e
+            // permitia ler os e-mails no caminho da conexao.
             $mail->SMTPOptions = array(
                 'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
+                    'verify_peer' => true,
+                    'verify_peer_name' => true,
+                    'allow_self_signed' => false
                 )
             );
 
@@ -852,12 +857,14 @@ try {
             $mail->Username = $smtp_config['username'];
             $mail->Password = $smtp_config['password'];
             
-            // SMTPOptions para aceitar certificados autoassinados (cuidado em produção)
+            // Valida o certificado TLS do servidor SMTP. Antes estava false /
+            // allow_self_signed true, o que aceitava qualquer certificado e
+            // permitia ler os e-mails no caminho da conexao.
             $mail->SMTPOptions = array(
                 'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
+                    'verify_peer' => true,
+                    'verify_peer_name' => true,
+                    'allow_self_signed' => false
                 )
             );
 
@@ -879,6 +886,14 @@ try {
             $mail->isHTML(true);
             $mail->Body = 'Olá! Este é um e-mail de teste enviado da sua configuração SMTP na plataforma GatewayPro. Se você recebeu esta mensagem, suas configurações estão funcionando corretamente.';
             $mail->AltBody = 'Olá! Este é um e-mail de teste enviado da sua configuração SMTP na plataforma GatewayPro. Se você recebeu esta mensagem, suas configurações estão funcionando corretamente.';
+
+            // Reply-To + List-Unsubscribe (o link aponta para desinscrever.php,
+            // que precisa responder, senao clicar piora a reputacao)
+            mailCabecalhosEntrega($mail, [
+                'username'   => $smtp_config['username'],
+                'from_email' => $smtp_config['from_email'] ?? $smtp_config['username'],
+                'from_name'  => $smtp_config['from_name'] ?? 'GatewayPro',
+            ], $test_email);
 
             error_log("ADMIN_API: Tentando enviar e-mail de teste para " . $test_email . " usando SMTP: Host=" . $mail->Host . ", Port=" . $mail->Port);
             $mail->send();

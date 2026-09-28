@@ -22,6 +22,9 @@ require_once $phpmailer_path . 'Exception.php';
 require_once $phpmailer_path . 'PHPMailer.php';
 require_once $phpmailer_path . 'SMTP.php';
 
+// Reply-To e List-Unsubscribe: helps contra spam (ver helpers/mail_helper.php)
+require_once __DIR__ . '/../helpers/mail_helper.php';
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Método não permitido']);
@@ -107,7 +110,14 @@ try {
         
         $mail->isHTML(true);
         $mail->Subject = 'Recuperação de Senha - ' . $nome_plataforma;
-        
+
+        // Reply-To + List-Unsubscribe (ver helpers/mail_helper.php)
+        mailCabecalhosEntrega($mail, [
+            'username'   => $smtp_config['smtp_username'] ?? '',
+            'from_email' => $smtp_config['smtp_from_email'] ?? '',
+            'from_name'  => $smtp_config['smtp_from_name'] ?? $nome_plataforma,
+        ], $email);
+
         // Template do e-mail
         $mail->Body = '
 <!DOCTYPE html>

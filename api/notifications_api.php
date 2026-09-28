@@ -520,12 +520,14 @@ function send_delivery_email_consolidated($to_email, $customer_name, $processed_
             $mail->Username = $smtp_config['username'];
             $mail->Password = $smtp_config['password'];
             
-            // SMTPOptions para aceitar certificados autoassinados (cuidado em produção)
+            // Valida o certificado TLS do servidor SMTP. Antes estava false /
+            // allow_self_signed true, o que aceitava qualquer certificado e
+            // permitia ler os e-mails no caminho da conexao.
             $mail->SMTPOptions = array(
                 'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
+                    'verify_peer' => true,
+                    'verify_peer_name' => true,
+                    'allow_self_signed' => false
                 )
             );
 

@@ -1,8 +1,28 @@
 <?php
 require_once __DIR__ . '/master_helper.php';
-define('LICENSE_WEBHOOK_URL', 'https://n8n.afcode.com.br/webhook/ativacao-gatewaypro');
-define('LICENSE_WEBHOOK_USER', 'gatewaypro');
-define('LICENSE_WEBHOOK_PASS', 'A3C193CAD8D61DD4');
+// A validacao remota de chave e OPCIONAL e fica desligada por padrao.
+// O servidor original foi removido: quem compra o codigo roda a propria
+// instancia e nao depende de ninguem de terceiro.
+//
+// Para ligar um servidor proprio, defina no stack:
+//   LICENSE_WEBHOOK_URL   (ex.: https://meu-n8n/webhook/ativacao)
+//   LICENSE_WEBHOOK_USER
+//   LICENSE_WEBHOOK_PASS
+// Sem URL, tudo passa a ser validado localmente (checkLicenseLocal).
+//
+// A forma mais simples de nao pedir chave nenhuma e ligar a checagem de
+// licenca de vez no stack:  LICENCA_DESATIVADA: "true"
+function getLicenseServerConfig() {
+    return [
+        'url'  => (string) (getenv('LICENSE_WEBHOOK_URL') ?: ''),
+        'user' => (string) (getenv('LICENSE_WEBHOOK_USER') ?: ''),
+        'pass' => (string) (getenv('LICENSE_WEBHOOK_PASS') ?: ''),
+    ];
+}
+
+function hasRemoteLicenseServer() {
+    return getLicenseServerConfig()['url'] !== '';
+}
 function isSystemActivated() {
     global $pdo;
     if (isMasterPanel()) {
@@ -54,7 +74,15 @@ function validateLicenseKey($activationKey) {
         'extensionId' => getSystemSetting('system_id', uniqid('gp_', true))
     ]);
     
-    $ch = curl_init(LICENSE_WEBHOOK_URL);
+    $server = getLicenseServerConfig();
+    if ($server['url'] === '') {
+        return [
+            'valid' => false,
+            'reason' => 'Não há servidor de licenças configurado nesta instalação.'
+        ];
+    }
+
+    $ch = curl_init($server['url']);
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $payload,
@@ -62,10 +90,11 @@ function validateLicenseKey($activationKey) {
             'Content-Type: application/json',
             'Accept: application/json'
         ],
-        CURLOPT_USERPWD => LICENSE_WEBHOOK_USER . ':' . LICENSE_WEBHOOK_PASS,
+        CURLOPT_USERPWD => $server['user'] . ':' . $server['pass'],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 30,
-        CURLOPT_SSL_VERIFYPEER => false
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYPEHOST => 2
     ]);
     
     $response = curl_exec($ch);
@@ -184,7 +213,13 @@ function checkLicenseOnLogin() {
     if (isMasterPanel()) {
         return ['valid' => true];
     }
-    
+
+    // Sem servidor remoto configurado a verificacao e 100% local.
+    // Isso mantem a instalacao funcionando offline, sem depender de terceiros.
+    if (!hasRemoteLicenseServer()) {
+        return checkLicenseLocal();
+    }
+
     $licenseKey = getLicenseKey();
     if (empty($licenseKey)) {
         return [

@@ -53,6 +53,9 @@ if (file_exists($phpmailer_path . 'PHPMailer.php')) {
 }
 if (file_exists($phpmailer_path . 'SMTP.php')) {
     require_once $phpmailer_path . 'SMTP.php';
+
+// Reply-To e List-Unsubscribe: helps contra spam (ver helpers/mail_helper.php)
+require_once __DIR__ . '/../helpers/mail_helper.php';
     error_log("API: PHPMailer SMTP.php carregado com sucesso.");
 } else {
     error_log("API: ERRO: PHPMailer SMTP.php não encontrado em " . $phpmailer_path . 'SMTP.php');
@@ -188,12 +191,14 @@ function send_delivery_email_consolidated($to_email, $customer_name, $processed_
             $mail->Username = $smtp_config['username'];
             $mail->Password = $smtp_config['password'];
             
-            // SMTPOptions para aceitar certificados autoassinados (cuidado em produção)
+            // Valida o certificado TLS do servidor SMTP. Antes estava false /
+            // allow_self_signed true, o que aceitava qualquer certificado e
+            // permitia ler os e-mails dos alunos no caminho da conexao.
             $mail->SMTPOptions = array(
                 'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
+                    'verify_peer' => true,
+                    'verify_peer_name' => true,
+                    'allow_self_signed' => false
                 )
             );
 
@@ -214,6 +219,15 @@ function send_delivery_email_consolidated($to_email, $customer_name, $processed_
         $mail->addAddress($to_email, $customer_name);
         $mail->Subject = $email_subject;
         $mail->isHTML(true);
+
+        // Reply-To + List-Unsubscribe. O aluno precisa poder responder e sair
+        // da lista com um clique, senao marca como spam e derruba a entrega dos
+        // e-mails de compra dos outros alunos.
+        mailCabecalhosEntrega($mail, [
+            'username'   => $smtp_config['username'] ?? '',
+            'from_email' => $smtp_config['from_email'] ?? '',
+            'from_name'  => $smtp_config['from_name'] ?? 'GatewayPro',
+        ], $to_email);
 
         // Substituições de placeholders globais
         $html_body = str_replace(
@@ -3558,7 +3572,7 @@ EOT;
                         }
                         
                         $mail->SMTPOptions = [
-                            'ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]
+                            'ssl' => ['verify_peer' => true, 'verify_peer_name' => true, 'allow_self_signed' => false]
                         ];
                         
                         $mail->CharSet = 'UTF-8';

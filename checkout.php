@@ -712,6 +712,27 @@ function render_sales_notification($config, $produto_nome_fallback) {
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<?php echo htmlspecialchars($fbPixelId); ?>&ev=PageView&noscript=1"/></noscript>
     <?php endif; ?>
+
+    <?php if (!empty($gaId) && !isset($_GET['preview'])): ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($gaId); ?>"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '<?php echo htmlspecialchars($gaId); ?>');
+    <?php if (!empty($gg_events_enabled['initiate_checkout'])) { echo "gtag('event', 'begin_checkout');"; } ?>
+    </script>
+    <?php endif; ?>
+
+    <?php if (!empty($gAdsId) && !isset($_GET['preview'])): ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($gAdsId); ?>"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '<?php echo htmlspecialchars($gAdsId); ?>');
+    </script>
+    <?php endif; ?>
     <!-- Fim Rastreamento -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -34,6 +34,7 @@ $config_paths = [
 ];
 
 $config_loaded = false;
+require_once __DIR__ . '/helpers/security_helper.php';
 foreach ($config_paths as $config_path) {
     if (file_exists($config_path)) {
         try {
@@ -153,17 +154,26 @@ try {
     $credentials = $stmt_user->fetch(PDO::FETCH_ASSOC);
     
     // URL Webhook
-    $domainName = $_SERVER['HTTP_HOST'];
+    // Duas correcoes: o protocolo nao pode ser fixo em "https://" (quebraria
+    // em http local e atras de proxy), e o host precisa ser alcancavel pela
+    // internet. Gateway recusa notification_url com localhost:
+    // "notificaction_url attribute must be url valid" (HTTP 400) - era isso que
+    // fazia a geracao do PIX falhar na maquina local.
+    $domainName = $_SERVER['HTTP_HOST'] ?? '';
     $scriptDir = dirname($_SERVER['PHP_SELF']);
     $path = rtrim(str_replace('\\', '/', $scriptDir), '/');
-    $webhook_url = "https://" . $domainName . $path . '/notification.php';
+    $basePublica = function_exists('app_public_base_url') ? app_public_base_url() : '';
+    // Vazio em localhost: o caller decide se omite o campo.
+    $webhook_url = $basePublica !== '' ? $basePublica . $path . '/notification.php' : '';
+    // Base para redirecionamento: em local cai no http, em producao no https.
+    $baseApp = $basePublica !== '' ? $basePublica : (is_https() ? 'https://' : 'http://') . $domainName;
     
     // URL Obrigado
     $stmt_prod_conf = $pdo->prepare("SELECT checkout_config FROM produtos WHERE id = ?");
     $stmt_prod_conf->execute([$main_product_id]);
     $p_conf = $stmt_prod_conf->fetch(PDO::FETCH_ASSOC);
     $checkout_config = json_decode($p_conf['checkout_config'] ?? '{}', true);
-    $redirect_url_after_approval = $checkout_config['redirectUrl'] ?? ("https://" . $domainName . $path . '/obrigado');
+    $redirect_url_after_approval = $checkout_config['redirectUrl'] ?? ($baseApp . $path . '/obrigado');
 
     log_process("Webhook URL gerada: " . $webhook_url);
     $checkout_session_uuid = uniqid('checkout_') . bin2hex(random_bytes(8));
@@ -656,13 +666,19 @@ try {
                 'last_name' => substr(strstr($data['name'], ' '), 1) ?: '',
                 'identification' => ['type' => 'CPF', 'number' => preg_replace('/[^0-9]/', '', $data['cpf'])],
             ],
-            'external_reference' => $checkout_session_uuid,
-            'notification_url' => $webhook_url
+            'external_reference' => $checkout_session_uuid
         ];
 
         if (isset($data['token'])) $payment_data['token'] = $data['token'];
         if (isset($data['installments'])) $payment_data['installments'] = (int)$data['installments'];
         if (isset($data['issuer_id'])) $payment_data['issuer_id'] = (int)$data['issuer_id'];
+
+        // Em localhost o gateway rejeita a URL de webhook, entao o campo simplesmente
+        // nao vai. O PIX e gerado normalmente; so o auto-aviso por webhook fica
+        // desligado localmente, o que nao afeta o teste.
+        if (!empty($webhook_url)) {
+            $payment_data['notification_url'] = $webhook_url;
+        }
 
         $ch = curl_init('https://api.mercadopago.com/v1/payments');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

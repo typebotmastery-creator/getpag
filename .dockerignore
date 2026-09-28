@@ -1,0 +1,31 @@
+# Nao entra na imagem. Sem isso o build manda 25 MB de lixo pro Docker.
+
+.git
+.gitignore
+node_modules
+
+# Conteudo de upload do desenvolvedor. O diretorio existe na imagem (o
+# docker-compose monta um volume em cima), mas os arquivos de teste nao.
+uploads/*
+!uploads/.htaccess
+
+# Servidor local: so funciona nesta maquina (caminho F:\checkout + XAMPP)
+router.local.php
+iniciar-local.bat
+teste-*.ps1
+
+# Configuracoes locais de desenvolvimento
+config/config.php
+config/config.local.php
+config/.env
+
+# Logs
+*.log
+logs_backup/*
+
+# Documentacao interna de deploy (o cliente recebe o README)
+DEPLOY.md
+
+# Pacotes de distributicao ja prontos
+*.zip
+ENVIAR-*.zip

@@ -476,6 +476,7 @@ if (isset($_POST['salvar_produto_config'])) {
                     $ordem++;
                 }
             }
+        } // Fim do if (isset orderbump_product_id)
         } // Fim do if ($aba_atual === 'order_bumps')
 
         $pdo->commit();

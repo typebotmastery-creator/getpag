@@ -186,8 +186,10 @@ if (!isset($_GET['produto_id']) || !is_numeric($_GET['produto_id'])) {
         echo '<link rel="icon" type="' . htmlspecialchars($favicon_type) . '" href="' . htmlspecialchars($favicon_url) . '">' . "\n";
     }
     ?>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="/assets/vendor/hls.min.js"></script>
+<script src="/assets/js/video-source.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -878,15 +880,23 @@ if (!isset($_GET['produto_id']) || !is_numeric($_GET['produto_id'])) {
 
                 currentLessonData = lesson;
 
-                // 3. Lógica de exibição: Tenta encontrar um ID de vídeo do YouTube
+                // 3. Lógica de exibição
+                // 3a. Video por URL (.m3u8 HLS ou .mp4) - tem prioridade
+                //     sobre o YouTube porque e o formato do Gumlet.
                 let videoId = null;
                 let isShort = false;
-                if ((lesson.tipo_conteudo === 'video' || lesson.tipo_conteudo === 'mixed') && lesson.url_video) {
-                    // Regex do player YMin para extrair o ID
-                    const match = lesson.url_video.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i);
-                    if (match && match[1]) {
-                        videoId = match[1];
-                        isShort = /youtube\.com\/shorts\//i.test(lesson.url_video);
+                let mounted = false;
+                if (lesson.tipo_conteudo === 'video' || lesson.tipo_conteudo === 'mixed') {
+                    if (lesson.url_video && window.GatewayProVideo) {
+                        mounted = window.GatewayProVideo.mount(playerHost, lesson.url_video);
+                    }
+                    if (!mounted && lesson.url_video) {
+                        // Regex do player YMin para extrair o ID
+                        const match = lesson.url_video.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i);
+                        if (match && match[1]) {
+                            videoId = match[1];
+                            isShort = /youtube\.com\/shorts\//i.test(lesson.url_video);
+                        }
                     }
                 }
 
@@ -898,10 +908,10 @@ if (!isset($_GET['produto_id']) || !is_numeric($_GET['produto_id'])) {
                     // Adiciona a classe 'ymin' e 'controls-hidden' (e 'vertical' se for short)
                     playerDiv.className = `ymin controls-hidden ${isShort ? 'vertical' : ''}`;
                     playerHost.appendChild(playerDiv);
-                    
+
                     // Chama a função principal do YMin
                     createYMin(playerDiv, videoId);
-                } else {
+                } else if (!mounted) {
                     // Não é um vídeo do YouTube (pode ser 'files' ou URL inválida) -> Mostra placeholder
                     playerHost.innerHTML = `<div class="w-full aspect-video bg-black flex flex-col items-center justify-center text-gray-500 rounded-xl">
                                                 <i data-lucide="video-off" class="w-16 h-16 text-gray-600 mb-4"></i>

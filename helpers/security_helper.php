@@ -315,5 +315,27 @@ if (!function_exists('is_https')) {
                $_SERVER['SERVER_PORT'] == 443 ||
                (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
     }
+
+    /**
+     * URL base publica do app, ou '' quando o host nao e alcancavel pela internet.
+     *
+     * Gateways (Mercado Pago, PushinPay) validam a notification_url e RECUSAM
+     * localhost / 127.0.0.1 com "notificaction_url attribute must be url valid"
+     * (HTTP 400). Sem isso, gerar o PIX falhava inteiramente na maquina local.
+     * Fora de localhost devolve a URL normalmente - o webhook volta a funcionar.
+     */
+    function app_public_base_url() {
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if ($host === '') {
+            return '';
+        }
+        // Host sem porta, minusculo, para comparar com a lista de locais.
+        $hostOnly = strtolower(explode(':', $host)[0]);
+        $localHosts = array('localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]');
+        if (in_array($hostOnly, $localHosts, true) || substr($hostOnly, -10) === '.localhost') {
+            return '';
+        }
+        return (is_https() ? 'https://' : 'http://') . $host;
+    }
 }
 

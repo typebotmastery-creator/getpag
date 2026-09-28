@@ -1,6 +1,11 @@
 # Credenciais e dados de producao nunca entram no versionamento.
+# O .htaccess da raiz bloqueia o acesso HTTP mesmo com o arquivo
+# presente no servidor, mas o ideal e nuncatera versionado.
+
+# Credenciais
 config/config.php
 config/.env
+config/config.local.php
 .env
 .env.*
 *.pem
@@ -9,21 +14,36 @@ config/.env
 *.key
 *.crt
 
-# Dump do banco (contem schema + usuarios + hashes + tokens)
+# Pacotes de distribuicao gerados (zip de entrega). Sao copia do codigo,
+# nao fonte, e incham o repositorio.
+*.zip
+ENVIAR-*.zip
+
+# Dump do banco. Este contem o schema (30 tabelas, sem dados de ninguem) e
+# PRECISA ser versionado: e ele que o docker/Dockerfile.db copia para
+# /docker-entrypoint-initdb.d e sem ele a stack do cliente sobe sem tabela.
 Banco_de_Dados.sql
 *.sql
+!Banco_de_Dados.sql
 *.sql.bak
 *.sql.tmp
 
 # Logs (podem conter tokens, emails e payloads de pagamento)
 *.log
 *.txt
-logs_backup/*
 !logs_backup/.htaccess
 
 # Uploads
+# O conteudo do usuario nao e versionado, mas o .htaccess de protecao
+# PRECISA ser versionado (senao a protecao se perde no deploy).
 uploads/*
 !uploads/.htaccess
+logs_backup/*
+!logs_backup/.htaccess
+
+# Servidor local de desenvolvimento
+# (depende do caminho F:\checkout e do PHP do XAMPP - nao funciona em outro PC)
+router.local.php
 
 # Sistema / editor
 .DS_Store

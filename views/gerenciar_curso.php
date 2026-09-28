@@ -723,8 +723,9 @@ try {
 
                 <!-- URL do Vídeo (Add) -->
                 <div id="add-video-url-container">
-                    <label for="add_url_video" class="block text-gray-300 text-sm font-semibold mb-2">URL do Vídeo (YouTube)</label>
-                    <input type="url" id="add_url_video" name="url_video" class="form-input-style w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32e768] text-white" placeholder="https://www.youtube.com/watch?v=...">
+                    <label for="add_url_video" class="block text-gray-300 text-sm font-semibold mb-2">URL do Vídeo (YouTube, .mp4 ou .m3u8)</label>
+                    <input type="url" id="add_url_video" name="url_video" class="form-input-style w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32e768] text-white" placeholder="https://www.youtube.com/watch?v=... ou https://video.gumlet.io/.../main.m3u8">
+                    <p class="text-xs text-gray-500 mt-1">Transmissão HLS do Gumlet ou similar: cole o link terminado em <code class="text-gray-400">.m3u8</code>. O aluno escolhe a qualidade e as legendas ficam disponíveis.</p>
                 </div>
 
                 <!-- Upload de Arquivos (Add) -->
@@ -771,8 +772,8 @@ try {
 
                 <!-- URL do Vídeo (Edit) -->
                 <div id="edit-video-url-container">
-                    <label for="edit_url_video" class="block text-gray-300 text-sm font-semibold mb-2">URL do Vídeo (YouTube)</label>
-                    <input type="url" id="edit_url_video" name="url_video" class="form-input-style w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32e768] text-white" placeholder="https://www.youtube.com/watch?v=...">
+                    <label for="edit_url_video" class="block text-gray-300 text-sm font-semibold mb-2">URL do Vídeo (YouTube, .mp4 ou .m3u8)</label>
+                    <input type="url" id="edit_url_video" name="url_video" class="form-input-style w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32e768] text-white" placeholder="https://www.youtube.com/watch?v=... ou https://video.gumlet.io/.../main.m3u8">
                 </div>
 
                 <!-- Arquivos Existentes (Edit) -->

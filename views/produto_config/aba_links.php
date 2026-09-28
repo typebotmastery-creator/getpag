@@ -1,7 +1,13 @@
 <?php
 // Aba Links - Link do checkout e Ofertas do Produto
-// Forçar HTTPS para links de checkout (produção sempre usa HTTPS)
-$protocol = "https://";
+// Protocolo detectado: em producao o Traefik encerra o TLS e repassa X-Forwarded-Proto; localmente o PHP responde apenas HTTP
+if (file_exists(__DIR__ . '/../../helpers/security_helper.php')) {
+    require_once __DIR__ . '/../../helpers/security_helper.php';
+}
+$isHttps = function_exists('is_https')
+    ? is_https()
+    : (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+$protocol = $isHttps ? 'https://' : 'http://';
 $domainName = $_SERVER['HTTP_HOST'];
 $checkout_link = $protocol . $domainName . '/checkout?p=' . $produto['checkout_hash'];
 

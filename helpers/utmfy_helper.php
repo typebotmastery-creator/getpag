@@ -79,8 +79,14 @@ if (!function_exists('trigger_utmfy_integrations')) {
             elseif (stripos($payment_method_raw, 'boleto') !== false) $utmfy_payment_method = 'boleto';
             elseif (stripos($payment_method_raw, 'cart') !== false || stripos($payment_method_raw, 'credit') !== false) $utmfy_payment_method = 'credit_card';
 
-            $customer_phone = preg_replace('/[^0-9]/', '', $event_data['comprador']['telefone']);
-            $customer_document = preg_replace('/[^0-9]/', '', $event_data['comprador']['cpf']);
+            // O $event_data vem montado em varios lugares do app e nao tem o mesmo
+            // formato sempre. Sem estas protecoes, uma venda sem telefone/CPF gerava
+            // "Undefined array key" e mandava o pedido com cliente vazio para a
+            // UTMfy, que rejeita o pedido inteiro.
+            $comprador = is_array($event_data['comprador'] ?? null) ? $event_data['comprador'] : [];
+
+            $customer_phone = preg_replace('/[^0-9]/', '', (string)($comprador['telefone'] ?? ''));
+            $customer_document = preg_replace('/[^0-9]/', '', (string)($comprador['cpf'] ?? ''));
             
             // TRATAMENTO DOS PRODUTOS
             $products_payload = [];
@@ -104,7 +110,7 @@ if (!function_exists('trigger_utmfy_integrations')) {
                     $total_cents += $cents;
                 }
             } else {
-                $total_cents = (int)(round((float)$event_data['valor_total_compra'], 2) * 100);
+                $total_cents = (int)(round((float)($event_data['valor_total_compra'] ?? 0), 2) * 100);
                 $products_payload[] = [
                     'id' => (string)($produto_id ?? 'DEFAULT'), 
                     'name' => 'Produto Principal', 
@@ -129,7 +135,7 @@ if (!function_exists('trigger_utmfy_integrations')) {
             $refunded_at = ($trigger_event === 'refunded') ? gmdate('Y-m-d H:i:s') : null;
 
             $payload = [
-                'orderId' => (string)$event_data['transacao_id'],
+                'orderId' => (string)($event_data['transacao_id'] ?? ''),
                 'platform' => 'GatewayProBR6',
                 'paymentMethod' => $utmfy_payment_method,
                 'status' => $utmfy_status,
@@ -137,8 +143,8 @@ if (!function_exists('trigger_utmfy_integrations')) {
                 'approvedDate' => $approved_date,
                 'refundedAt' => $refunded_at,
                 'customer' => [
-                    'name' => $event_data['comprador']['nome'],
-                    'email' => $event_data['comprador']['email'],
+                    'name' => (string)($comprador['nome'] ?? ''),
+                    'email' => (string)($comprador['email'] ?? ''),
                     'phone' => $customer_phone,
                     'document' => $customer_document,
                     'country' => 'BR',
@@ -174,7 +180,9 @@ if (!function_exists('trigger_utmfy_integrations')) {
                 curl_setopt($ch, CURLOPT_POST, true);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $json_payload);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                // O token da UTMfy viaja nessa chamada. Desligar a verificacao do
+                // certificado permitiria que um interceptador lesse o token.
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
                 $response = curl_exec($ch);
                 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -183,7 +191,9 @@ if (!function_exists('trigger_utmfy_integrations')) {
                 log_utmfy_helper("Resp UTMfy ($http_code): " . substr($response, 0, 200));
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
+            // \Throwable e nao \Exception: no PHP 8 os erros de tipo (TypeError)
+            // NAO sao capturados por Exception e escapariam daqui.
             log_utmfy_helper("ERRO GERAL UTMfy: " . $e->getMessage());
         }
     }

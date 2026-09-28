@@ -75,10 +75,31 @@ $token_secreto = getenv('TOKEN_AUTH_SECRET') ?: 'SUA_CHAVE_SECRETA';
                             Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                         </code>
                         <button onclick="copyToClipboard('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9')" class="absolute top-2 right-2 p-2 bg-dark-elevated rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <div class="mt-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                                <p class="text-sm font-semibold text-amber-300 mb-2">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4 inline-block align-text-bottom"></i>
+                                    Leitura funciona com o token. Escrita (POST, PUT, DELETE) exige um segundo passo
+                                </p>
+                                <p class="text-xs text-gray-400 mb-3">
+                                    A API tambem exige prote��o CSRF. O token sozinho <strong>n��o basta</strong>: sem o
+                                    cabe�alho <code>X-XSRF-TOKEN</code> a resposta � <code>403</code> e nada � gravado.
+                                    O valor do cabe�alho tem que ser <strong>igual ao cookie <code>XSRF-TOKEN</code></strong>
+                                    da mesma resposta. Faz assim:
+                                </p>
+                                <ol class="text-xs text-gray-400 space-y-1 list-decimal list-inside mb-3">
+                                    <li>Faz uma requisi��o <code>GET</code> (ela cria e devolve o cookie <code>XSRF-TOKEN</code>)</li>
+                                    <li>Repete a requisi��o de escrita mandando o mesmo valor no cabe�alho <code>X-XSRF-TOKEN</code></li>
+                                </ol>
+                                <p class="text-xs text-gray-400">
+                                    O erro <code>1017 - Token XSRF ausente ou inv�lido</code> significa que os dois
+                                    valores n��o bateram.
+                                </p>
+                            </div>
+                        </div>
             </div>
         </div>
 
@@ -158,9 +179,16 @@ $token_secreto = getenv('TOKEN_AUTH_SECRET') ?: 'SUA_CHAVE_SECRETA';
                                 <span class="text-xs text-gray-500">Criar novo</span>
                             </div>
                             <div class="code-block p-3 relative group">
-                                <pre class="text-[11px] text-gray-400 overflow-x-auto">curl -X POST "<?php echo $apiUrl; ?>/records/<?php echo $res['name']; ?>" \
+                                <pre class="text-[11px] text-gray-400 overflow-x-auto"># 1) pegue o cookie XSRF-TOKEN
+curl -c cookies.txt "<?php echo $apiUrl; ?>/records/<?php echo $res['name']; ?>" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 2) crie usando o valor do cookie no cabecalho
+curl -X POST "<?php echo $apiUrl; ?>/records/<?php echo $res['name']; ?>" \
+  -b cookies.txt \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
+  -H "X-XSRF-TOKEN: VALOR_DO_COOKIE" \
   -d '{"campo": "valor"}'</pre>
                                 <button onclick="copyRaw(this)" class="absolute top-2 right-2 p-1.5 bg-dark-elevated rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
@@ -179,8 +207,10 @@ $token_secreto = getenv('TOKEN_AUTH_SECRET') ?: 'SUA_CHAVE_SECRETA';
                             </div>
                             <div class="code-block p-3 relative group">
                                 <pre class="text-[11px] text-gray-400 overflow-x-auto">curl -X PUT "<?php echo $apiUrl; ?>/records/<?php echo $res['name']; ?>/1" \
+  -b cookies.txt \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
+  -H "X-XSRF-TOKEN: VALOR_DO_COOKIE" \
   -d '{"campo": "novo_valor"}'</pre>
                                 <button onclick="copyRaw(this)" class="absolute top-2 right-2 p-1.5 bg-dark-elevated rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
@@ -199,7 +229,9 @@ $token_secreto = getenv('TOKEN_AUTH_SECRET') ?: 'SUA_CHAVE_SECRETA';
                             </div>
                             <div class="code-block p-3 relative group">
                                 <pre class="text-[11px] text-gray-400 overflow-x-auto">curl -X DELETE "<?php echo $apiUrl; ?>/records/<?php echo $res['name']; ?>/1" \
-  -H "Authorization: Bearer YOUR_TOKEN"</pre>
+  -b cookies.txt \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-XSRF-TOKEN: VALOR_DO_COOKIE"</pre>
                                 <button onclick="copyRaw(this)" class="absolute top-2 right-2 p-1.5 bg-dark-elevated rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                 </button>

@@ -41,7 +41,9 @@ function send_evolution_message($phone, $message, $config) {
         'apikey: ' . $config['api_key']
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    // A api key da Evolution viaja nessa chamada. Desligar a verificacao do
+    // certificado permitiria que um interceptador lesse a chave.
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
