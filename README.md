@@ -64,8 +64,26 @@ Substitua cada `TROCAR_...` no arquivo:
 | `TROCAR_SENHA_DO_APP` | senha do app (**precisa ser igual nos dois lugares**) |
 | `TROCAR_SEU_DOMINIO` | seu dominio, sem `https://` |
 | `TROCAR_NOME_DA_REDE_EXTERNA` | rede do Traefik (padrao: `traefik_proxy`) |
+| `TROCAR_NOME_DO_CERTIFICADOR` | nome do certresolver (veja abaixo) |
+| `TROCAR_SEGREDO_DA_API` | string aleatoria para a API interna |
 | `TROCAR_SEGREDO_LONGO_ALEATORIO` | string aleatoria para e-mail |
 | `PORTAINER_USUARIO` / `PORTAINER_SENHA_BCRYPT` | acesso ao `/manage` |
+
+### Descubra o nome do seu certresolver
+
+O nome **nao** pode ser inventado. Confira o que o seu Traefik usa:
+
+```bash
+docker inspect traefik --format '{{range .Config.Cmd}}{{println .}}{{end}}' \
+  | grep certificatesresolvers
+```
+
+Vai sair algo como `certificatesresolvers.letsencryptresolver.acme.httpchallenge=true`.
+Nesse caso, `TROCAR_NOME_DO_CERTIFICADOR` = `letsencryptresolver` — **sem o
+prefixo `certificatesresolvers.` e sem o sufixo `.acme`**.
+
+Se nao aparecer nenhum, seu Traefik nao emite certificado. Aponte o
+`certresolver` para o de outra instalacao, ou faca o TLS no seu DNS.
 
 > As linhas do Portainer em `/manage` sao opcionais. Se nao quiser o
 > Portainer no mesmo dominio, apague as 7 linhas de `gatewaypro-manage`.
@@ -85,6 +103,36 @@ cd getpag && docker stack deploy -c docker-compose.yml gatewaypro
 ### 6. Acesse
 
 `https://SEU_DOMINIO` — as 30 tabelas sao criadas no primeiro start.
+
+---
+
+## Por que a rede do banco e separada
+
+O app entra em duas redes: a rede do Traefik (para o Traefik rotear o
+dominio) e uma rede interna (para falar com o banco). O banco entra
+**so na interna**.
+
+Se o banco estivesse na rede do Traefik, qualquer outro servico naquela
+rede — e o Traefik agenda servicos nessa rede — conseguiria abrir a porta
+3306 do banco. Como o root do MySQL tem a mesma senha que o app, isso e
+uma porta aberta.
+
+Alem disso a rede do Traefik nao e problema se voce mover o banco: ele
+continua resolvendo `db` pelo nome, porque as duas redes estao ligadas.
+
+---
+
+## Sobre o token da API
+
+`TOKEN_AUTH_SECRET` e o que a API interna (`/api.php`) usa para
+autenticar quem chama. Sem ele, o app cai no banco, nao acha a chave e
+passa a usar um valor padrao que todo mundo conhece.
+
+Gere um valor diferente para cada cliente:
+
+```bash
+openssl rand -hex 24
+```
 
 ---
 

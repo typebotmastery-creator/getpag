@@ -14,17 +14,30 @@ services:
     image: mariadb:10.11
     restart: unless-stopped
     environment:
+      TZ: America/Sao_Paulo
       MARIADB_ROOT_PASSWORD: "TROCAR_SENHA_ROOT_FORTE"
       MARIADB_DATABASE: "TROCAR_NOME_DO_BANCO"
       MARIADB_USER: "gatewaypro"
       MARIADB_PASSWORD: "TROCAR_SENHA_DO_APP"
+      # A API interna (api.php) le este valor do ambiente. Sem ele o
+      # middleware cai no banco, onde a chave nao existe, e usa o padrao
+      # 'SUA_CHAVE_SECRETA' - a API ficaria autenticando com uma chave
+      # que todo mundo conhece.
+      TOKEN_AUTH_SECRET: "TROCAR_SEGREDO_DA_API"
     volumes:
       - db_data:/var/lib/mysql
       # cria as 30 tabelas no primeiro start
       - ./Banco_de_Dados.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
-      - gatewaypro_net
+      # so a rede interna. O banco nao entra na rede do Traefik de proposito:
+      # se entrasse, qualquer servico da rede conseguiria abrir a porta 3306.
+      - internal
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
       resources:
         limits:
           memory: 768M
@@ -46,10 +59,12 @@ services:
         condition: service_healthy
     environment:
       # lidos pelo entrypoint para montar o config/config.php
+      TZ: America/Sao_Paulo
       DB_HOST: "db:3306"
       DB_NAME: "TROCAR_NOME_DO_BANCO"
       DB_USER: "gatewaypro"
       DB_PASSWORD: "TROCAR_SENHA_DO_APP"
+      TOKEN_AUTH_SECRET: "TROCAR_SEGREDO_DA_API"
       # true = nao pede chave de ativacao. Deixe assim.
       LICENCA_DESATIVADA: "true"
       # string longa e aleatoria, usada para assinar o link de descadastro
@@ -60,26 +75,34 @@ services:
       # Backup deste volume = backup de tudo que o usuario subiu.
       - app_uploads:/var/www/html/uploads
     networks:
-      - gatewaypro_net
+      - internal
+      - traefik
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
       resources:
         limits:
           memory: 512M
       labels:
         # ---------- rota do app ----------
         - "traefik.enable=true"
-        - "traefik.docker.network=gatewaypro_net"
+        - "traefik.docker.network=traefik"
         - "traefik.http.routers.gatewaypro.rule=Host(`TROCAR_SEU_DOMINIO`)"
-        - "traefik.http.routers.gatewaypro.entrypoints=web,websecure"
-        - "traefik.http.routers.gatewaypro.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.gatewaypro.entrypoints=websecure"
+        - "traefik.http.routers.gatewaypro.tls=true"
+        - "traefik.http.routers.gatewaypro.tls.certresolver=TROCAR_NOME_DO_CERTIFICADOR"
         - "traefik.http.services.gatewaypro.loadbalancer.server.port=80"
 
         # ---------- rota do Portainer em /manage ----------
-        # Opcional. Apague estas 6 linhas se o cliente nao quiser o Portainer
+        # Opcional. Apague estas 7 linhas se o cliente nao quiser o Portainer
         # no mesmo dominio. Prioridade alta para o app nao engolir /manage.
         - "traefik.http.routers.gatewaypro-manage.rule=Host(`TROCAR_SEU_DOMINIO`) && PathPrefix(`/manage`)"
-        - "traefik.http.routers.gatewaypro-manage.entrypoints=web,websecure"
-        - "traefik.http.routers.gatewaypro-manage.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.gatewaypro-manage.entrypoints=websecure"
+        - "traefik.http.routers.gatewaypro-manage.tls=true"
+        - "traefik.http.routers.gatewaypro-manage.tls.certresolver=TROCAR_NOME_DO_CERTIFICADOR"
         - "traefik.http.routers.gatewaypro-manage.priority=100"
         - "traefik.http.routers.gatewaypro-manage.middlewares=gatewaypro-manage-auth"
         - "traefik.http.middlewares.gatewaypro-manage-auth.basicauth.users=PORTAINER_USUARIO:PORTAINER_SENHA_BCRYPT"
@@ -90,7 +113,12 @@ volumes:
   app_uploads:
 
 networks:
-  gatewaypro_net:
+  # RedeOverlay para o app falar com o banco sem passar pela rede do Traefik
+  internal:
+    driver: overlay
+    attachable: true
+  # rede ja existente do Traefik do cliente
+  traefik:
     external: true
-    # rede ja existente do Traefik do cliente (veja com: docker network ls)
+    # nome real da rede externa do Traefik (docker network ls)
     name: "TROCAR_NOME_DA_REDE_EXTERNA"
