@@ -6,7 +6,8 @@
 #   3. Clique em Deploy. O banco e criado vazio e as 30 tabelas entram sozinhas.
 #
 # O que o cliente PRECISA trocar: dominio, senha do banco, nome do banco,
-# rede externa e a senha do Portainer. O resto ja funciona sem edicao.
+# rede do Traefik, nome do certresolver, token da API e o segredo de e-mail.
+# O resto ja funciona sem edicao.
 
 services:
 
@@ -95,18 +96,6 @@ services:
         - "traefik.http.routers.gatewaypro.tls=true"
         - "traefik.http.routers.gatewaypro.tls.certresolver=TROCAR_NOME_DO_CERTIFICADOR"
         - "traefik.http.services.gatewaypro.loadbalancer.server.port=80"
-
-        # ---------- rota do Portainer em /manage ----------
-        # Opcional. Apague estas 7 linhas se o cliente nao quiser o Portainer
-        # no mesmo dominio. Prioridade alta para o app nao engolir /manage.
-        - "traefik.http.routers.gatewaypro-manage.rule=Host(`TROCAR_SEU_DOMINIO`) && PathPrefix(`/manage`)"
-        - "traefik.http.routers.gatewaypro-manage.entrypoints=websecure"
-        - "traefik.http.routers.gatewaypro-manage.tls=true"
-        - "traefik.http.routers.gatewaypro-manage.tls.certresolver=TROCAR_NOME_DO_CERTIFICADOR"
-        - "traefik.http.routers.gatewaypro-manage.priority=100"
-        - "traefik.http.routers.gatewaypro-manage.middlewares=gatewaypro-manage-auth"
-        - "traefik.http.middlewares.gatewaypro-manage-auth.basicauth.users=PORTAINER_USUARIO:PORTAINER_SENHA_BCRYPT"
-        - "traefik.http.middlewares.gatewaypro-manage-auth.service.name=portainer@docker-swarm"
 
 volumes:
   db_data:
