@@ -90,7 +90,7 @@ services:
       labels:
         # ---------- rota do app ----------
         - "traefik.enable=true"
-        - "traefik.docker.network=traefik"
+        - "traefik.docker.network=TROCAR_NOME_DA_REDE_EXTERNA"
         - "traefik.http.routers.gatewaypro.rule=Host(`TROCAR_SEU_DOMINIO`)"
         - "traefik.http.routers.gatewaypro.entrypoints=websecure"
         - "traefik.http.routers.gatewaypro.tls=true"
