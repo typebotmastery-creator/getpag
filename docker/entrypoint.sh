@@ -14,6 +14,19 @@ CONFIG_DIR="/var/www/html/config"
 CONFIG_FILE="$CONFIG_DIR/config.php"
 mkdir -p "$CONFIG_DIR"
 
+# Garante que uploads/config exista e seja gravavel pelo Apache na inicializacao.
+# O volume named app_uploads pode ja existir sem a subpasta (de deploys com a
+# imagem antiga), e o .dockerignore exclui uploads/* da imagem. Sem isso os
+# uploads de logo/favicon falham com "No such file or directory".
+UPLOADS_CONFIG="/var/www/html/uploads/config"
+if [ ! -d "$UPLOADS_CONFIG" ]; then
+    mkdir -p "$UPLOADS_CONFIG" 2>/dev/null || echo "AVISO: nao consegui criar $UPLOADS_CONFIG"
+fi
+chown -R www-data:www-data /var/www/html/uploads 2>/dev/null || true
+chmod -R 775 /var/www/html/uploads 2>/dev/null || true
+
+echo "Diretorio de uploads: $(ls -ld /var/www/html/uploads /var/www/html/uploads/config 2>/dev/null | tr '\n' ' ')"
+
 # Espera o banco subir. Em Swarm o depends_on do compose e ignorado, entao o
 # app pode subir antes do MySQL. Sem esta espera o config.php chama die() e o
 # container morre em laco.

@@ -46,10 +46,10 @@ RUN chmod +x /usr/local/bin/gatewaypro-entrypoint.sh
 RUN mkdir -p /var/log && touch /var/log/php_errors.log \
     && chown www-data:www-data /var/log/php_errors.log
 
-# uploads/ e config/ precisam existir e ser gravaveis pelo Apache.
+# uploads/, uploads/config/ e config/ precisam existir e ser gravaveis pelo Apache.
 # O mkdir e obrigatorio: o .dockerignore tira o conteudo de uploads/, e sem
 # o diretorio o chown abaixo quebraria o build.
-RUN mkdir -p /var/www/html/uploads /var/www/html/config /var/www/html/logs_backup \
+RUN mkdir -p /var/www/html/uploads /var/www/html/uploads/config /var/www/html/config /var/www/html/logs_backup \
     && chown -R www-data:www-data /var/www/html/uploads /var/www/html/config /var/www/html/logs_backup \
     && chmod -R 775 /var/www/html/uploads /var/www/html/config /var/www/html/logs_backup
 

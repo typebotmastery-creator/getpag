@@ -1116,8 +1116,9 @@ try {
     elseif ($action === 'upload_logo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../config/config.php';
         $upload_dir = 'uploads/config/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $upload_dir_absoluto = __DIR__ . '/../' . $upload_dir;
+        if (!is_dir($upload_dir_absoluto)) {
+            @mkdir($upload_dir_absoluto, 0755, true);
         }
         
         if (!isset($_FILES['logo']) || $_FILES['logo']['error'] !== UPLOAD_ERR_OK) {
@@ -1150,8 +1151,8 @@ try {
         // Debug
         error_log("ADMIN_API upload_logo: target_path (relativo)=$target_path");
         error_log("ADMIN_API upload_logo: target_path (absoluto)=$target_path_absoluto");
-        error_log("ADMIN_API upload_logo: upload_dir exists=" . (is_dir($upload_dir) ? 'YES' : 'NO'));
-        error_log("ADMIN_API upload_logo: upload_dir writable=" . (is_writable($upload_dir) ? 'YES' : 'NO'));
+        error_log("ADMIN_API upload_logo: upload_dir_absoluto exists=" . (is_dir($upload_dir_absoluto) ? 'YES' : 'NO'));
+        error_log("ADMIN_API upload_logo: upload_dir_absoluto writable=" . (is_writable($upload_dir_absoluto) ? 'YES' : 'NO'));
         
         // Deleta logo antiga se existir
         $old_logo = getSystemSetting('logo_url', '');
@@ -1197,8 +1198,9 @@ try {
     elseif ($action === 'upload_login_image' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../config/config.php';
         $upload_dir = 'uploads/config/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $upload_dir_absoluto = __DIR__ . '/../' . $upload_dir;
+        if (!is_dir($upload_dir_absoluto)) {
+            @mkdir($upload_dir_absoluto, 0755, true);
         }
         
         if (!isset($_FILES['login_image']) || $_FILES['login_image']['error'] !== UPLOAD_ERR_OK) {
@@ -1261,8 +1263,9 @@ try {
     elseif ($action === 'upload_logo_checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../config/config.php';
         $upload_dir = 'uploads/config/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $upload_dir_absoluto = __DIR__ . '/../' . $upload_dir;
+        if (!is_dir($upload_dir_absoluto)) {
+            @mkdir($upload_dir_absoluto, 0755, true);
         }
         
         if (!isset($_FILES['logo_checkout']) || $_FILES['logo_checkout']['error'] !== UPLOAD_ERR_OK) {
@@ -1325,8 +1328,9 @@ try {
     elseif ($action === 'upload_favicon' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../config/config.php';
         $upload_dir = 'uploads/config/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $upload_dir_absoluto = __DIR__ . '/../' . $upload_dir;
+        if (!is_dir($upload_dir_absoluto)) {
+            @mkdir($upload_dir_absoluto, 0755, true);
         }
         
         if (!isset($_FILES['favicon']) || $_FILES['favicon']['error'] !== UPLOAD_ERR_OK) {
@@ -1389,8 +1393,9 @@ try {
     elseif ($action === 'upload_notification_image' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../config/config.php';
         $upload_dir = 'uploads/config/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $upload_dir_absoluto = __DIR__ . '/../' . $upload_dir;
+        if (!is_dir($upload_dir_absoluto)) {
+            @mkdir($upload_dir_absoluto, 0755, true);
         }
         
         if (!isset($_FILES['notification_image']) || $_FILES['notification_image']['error'] !== UPLOAD_ERR_OK) {
@@ -1450,8 +1455,9 @@ try {
     elseif ($action === 'upload_security_seal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../config/config.php';
         $upload_dir = 'uploads/config/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $upload_dir_absoluto = __DIR__ . '/../' . $upload_dir;
+        if (!is_dir($upload_dir_absoluto)) {
+            @mkdir($upload_dir_absoluto, 0755, true);
         }
         
         if (!isset($_FILES['security_seal']) || $_FILES['security_seal']['error'] !== UPLOAD_ERR_OK) {

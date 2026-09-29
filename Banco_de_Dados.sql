@@ -172,11 +172,11 @@ CREATE TABLE `configuracoes_sistema` (
 
 INSERT INTO `configuracoes_sistema` (`id`, `chave`, `valor`, `tipo`, `descricao`, `created_at`, `updated_at`) VALUES
 (1, 'cor_primaria', '#32e768', 'color', 'Cor primária do sistema', '2025-12-27 14:04:37', '2025-12-27 17:30:58'),
-(2, 'logo_url', 'uploads/config/logo_1766928123.png', 'image', 'URL da logo do sistema', '2025-12-27 14:04:37', '2025-12-28 13:22:03'),
-(3, 'login_image_url', 'uploads/config/login_bg_1766856615.jpg', 'image', 'URL da imagem de fundo da tela de login', '2025-12-27 14:04:37', '2025-12-27 17:30:15'),
+(2, 'logo_url', '', 'image', 'URL da logo do sistema', '2025-12-27 14:04:37', '2025-12-28 13:22:03'),
+(3, 'login_image_url', '', 'image', 'URL da imagem de fundo da tela de login', '2025-12-27 14:04:37', '2025-12-27 17:30:15'),
 (13, 'nome_plataforma', 'GatewayPro', 'text', NULL, '2025-12-27 16:39:37', '2025-12-28 13:22:09'),
-(14, 'logo_checkout_url', 'uploads/config/logo_checkout_1766928133.png', 'text', NULL, '2025-12-27 16:51:06', '2025-12-28 13:22:13'),
-(15, 'favicon_url', 'uploads/config/favicon_1766928139.png', 'text', NULL, '2025-12-27 22:12:24', '2025-12-28 13:22:19'),
+(14, 'logo_checkout_url', '', 'text', NULL, '2025-12-27 16:51:06', '2025-12-28 13:22:13'),
+(15, 'favicon_url', '', 'text', NULL, '2025-12-27 22:12:24', '2025-12-28 13:22:19'),
 (16, 'master_panel_url', '', 'text', 'URL do painel master para validação de licenças', '2025-12-28 14:00:00', '2025-12-28 14:00:00'),
 (17, 'master_panel_api_token', '', 'text', 'Token de autenticação da API do painel master', '2025-12-28 14:00:00', '2025-12-28 14:00:00'),
 (18, 'license_key', '', 'text', 'Chave de licença ativada', '2025-12-28 14:00:00', '2025-12-28 14:00:00'),
