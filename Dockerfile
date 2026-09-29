@@ -15,9 +15,11 @@ FROM php:8.2-apache
 #   zip        - 1 arquivo usa
 #   fileinfo   - 1 arquivo usa
 #   opcache    - performance
+# Nota: nao rode "docker-php-ext-configure oniguruma" aqui. No PHP 8.2 o
+# oniguruma ja vem embutido no mbstring e nao existe como extensao separada
+# na imagem oficial - esse comando falha o build.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libzip-dev libonig-dev libcurl4-openssl-dev \
-    && docker-php-ext-configure oniguruma \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql curl mbstring simplexml zip fileinfo opcache \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*

@@ -55,9 +55,11 @@ services:
       dockerfile: Dockerfile
     image: gatewaypro-app:latest
     restart: unless-stopped
+    # Em Swarm a forma longa de depends_on (condition:) nao e aceita
+    # ("must be a list") e o proprio entrypoint ja espera o banco ficar
+    # saudavel antes de montar o config.
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       # lidos pelo entrypoint para montar o config/config.php
       TZ: America/Sao_Paulo
