@@ -18,8 +18,9 @@ FROM php:8.2-apache
 # Nota: nao rode "docker-php-ext-configure oniguruma" aqui. No PHP 8.2 o
 # oniguruma ja vem embutido no mbstring e nao existe como extensao separada
 # na imagem oficial - esse comando falha o build.
+# libxml2-dev e necessario pelo simplexml ("Package 'libxml-2.0' not found").
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libzip-dev libonig-dev libcurl4-openssl-dev \
+        libzip-dev libonig-dev libcurl4-openssl-dev libxml2-dev \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql curl mbstring simplexml zip fileinfo opcache \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
