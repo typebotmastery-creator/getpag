@@ -91,13 +91,17 @@ services:
           memory: 512M
       labels:
         # ---------- rota do app ----------
+        # NOME DE ROTA UNICO: troque TROCAR_NOME_DA_ROTA por algo ligado ao
+        # dominio (ex.: gwp-getpag-typebotmastery). Se vender/instalar mais de
+        # uma instancia no MESMO Traefik da VPS, sem nome unico as rotas
+        # colidem e o Traefik retorna 404 para todos. Use SEM espacos.
         - "traefik.enable=true"
         - "traefik.docker.network=TROCAR_NOME_DA_REDE_EXTERNA"
-        - "traefik.http.routers.gatewaypro.rule=Host(`TROCAR_SEU_DOMINIO`)"
-        - "traefik.http.routers.gatewaypro.entrypoints=websecure"
-        - "traefik.http.routers.gatewaypro.tls=true"
-        - "traefik.http.routers.gatewaypro.tls.certresolver=TROCAR_NOME_DO_CERTIFICADOR"
-        - "traefik.http.services.gatewaypro.loadbalancer.server.port=80"
+        - "traefik.http.routers.TROCAR_NOME_DA_ROTA.rule=Host(`TROCAR_SEU_DOMINIO`)"
+        - "traefik.http.routers.TROCAR_NOME_DA_ROTA.entrypoints=websecure"
+        - "traefik.http.routers.TROCAR_NOME_DA_ROTA.tls=true"
+        - "traefik.http.routers.TROCAR_NOME_DA_ROTA.tls.certresolver=TROCAR_NOME_DO_CERTIFICADOR"
+        - "traefik.http.services.TROCAR_NOME_DA_ROTA.loadbalancer.server.port=80"
 
 volumes:
   db_data:
